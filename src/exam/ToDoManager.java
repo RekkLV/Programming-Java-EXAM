@@ -3,11 +3,18 @@ package exam;
 public class ToDoManager {
 
 	public static void main(String[] args) {
-		Task task1 = new Task(1, "Study", Priority.HIGH);
-		Task task2 = new Task(2, "Buy Groceries", Priority.LOW);
+		TaskManager manager = new TaskManager();
 		
-		System.out.println(task1);
-		System.out.println(task2);
+		manager.addTask(new Task(1, "Study", Priority.HIGH));
+		manager.addTask(new Task(2, "Buy stuff", Priority.LOW));
+		manager.addTask(new Task(3, "Sleep", Priority.HIGH));
+		
+		manager.printAllTasks();
+		
+		boolean removed = manager.removeTaskById(2);
+		System.out.println("Removed: " + removed);
+		
+		manager.printAllTasks();
 
 	}
 

@@ -17,4 +17,9 @@ public class Task {
 	public String toString() {
 		return "Task" + id + ": " + title + " | Status: " + status + " | Priority: " + priority;
 	}
+	
+	//getter
+	public int getId() {
+		return id;
+	}
 }
