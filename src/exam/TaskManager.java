@@ -13,7 +13,7 @@ public class TaskManager {
 		tasks.add(task);
 	}
 	
-	public boolean removeTaskById(int id) {
+	public boolean removeTaskById(int id) { // dzēst uzdevumu pēc ID
 		for (int i = 0; i<tasks.size(); i++) {
 			if (tasks.get(i).getId() == id) {
 				tasks.remove(i);
@@ -35,7 +35,7 @@ public class TaskManager {
 		}
 	}
 	
-	public boolean markTaskCompleteById(int id) {
+	public boolean markTaskCompleteById(int id) { // atzīmēt uzdevumu kā izpildītu pēc ID
 		for (int i = 0; i<tasks.size(); i++) {
 			if (tasks.get(i).getId() == id) {
 				tasks.get(i).markCompleted();
@@ -45,7 +45,7 @@ public class TaskManager {
 		return false;
 	}
 	
-	public boolean editTaskById(int id, String newTitle, Priority newPriority) {
+	public boolean editTaskById(int id, String newTitle, Priority newPriority) { // rediget uzdevumu pēc ID
 		for (int i = 0; i<tasks.size(); i++) {
 			if (tasks.get(i).getId() == id) {
 				tasks.get(i).setTitle(newTitle);
@@ -54,6 +54,16 @@ public class TaskManager {
 			}
 		}
 		return false;
+	}
+	
+	public ArrayList<Task> filterByStatus(TaskStatus status) { // filtrēt uzdevumus pēc statusa
+		ArrayList<Task> result = new ArrayList<>();
+		for (int i = 0; i<tasks.size(); i++) {
+			if(tasks.get(i).getStatus() == status) {
+				result.add(tasks.get(i));
+			}
+		}
+		return result;
 	}
 	
 }

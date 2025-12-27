@@ -38,4 +38,8 @@ public class Task {
 			priority = newPriority;
 		}
 	}
+	
+	public TaskStatus getStatus() {
+		return status;
+	}
 }
