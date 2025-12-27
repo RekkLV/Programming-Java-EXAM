@@ -45,4 +45,15 @@ public class TaskManager {
 		return false;
 	}
 	
+	public boolean editTaskById(int id, String newTitle, Priority newPriority) {
+		for (int i = 0; i<tasks.size(); i++) {
+			if (tasks.get(i).getId() == id) {
+				tasks.get(i).setTitle(newTitle);
+				tasks.get(i).setPriority(newPriority);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }

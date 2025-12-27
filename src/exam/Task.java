@@ -26,4 +26,16 @@ public class Task {
 	public void markCompleted() {
 		status = TaskStatus.COMPLETED;
 	}
+	
+	public void setTitle(String newTitle) {
+		if (newTitle != null && !newTitle.isBlank()) {
+			title = newTitle;
+		}
+	}
+	
+	public void setPriority(Priority newPriority) {
+		if (newPriority != null) {
+			priority = newPriority;
+		}
+	}
 }
