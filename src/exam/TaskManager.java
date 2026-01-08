@@ -1,6 +1,8 @@
 package exam;
 
 import java.util.*;
+import java.io.*;
+
 
 public class TaskManager {
 	private ArrayList<Task> tasks;
@@ -70,5 +72,48 @@ public class TaskManager {
 	public ArrayList<Task> getAllTasks() {
 	    return tasks;
 	}
+	
+	public void saveToFile(String filename) {
+	    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+	        for (Task t : tasks) {
+	            writer.println(
+	                t.getId() + ";" +
+	                t.getTitle() + ";" +
+	                t.getStatus() + ";" +
+	                t.getPriority()
+	            );
+	        }
+	    } catch (IOException e) {
+	        System.out.println("Error saving file.");
+	    }
+	}
+	
+	public void loadFromFile(String filename) {
+	    tasks.clear();
+	    nextId = 1;
+
+	    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+	        String line;
+	        while ((line = reader.readLine()) != null) {
+	            String[] parts = line.split(";");
+
+	            int id = Integer.parseInt(parts[0]);
+	            String title = parts[1];
+	            TaskStatus status = TaskStatus.valueOf(parts[2]);
+	            Priority priority = Priority.valueOf(parts[3]);
+
+	            Task task = new Task(id, title, priority);
+	            if (status == TaskStatus.COMPLETED) {
+	                task.markCompleted();
+	            }
+
+	            tasks.add(task);
+	            nextId = Math.max(nextId, id + 1);
+	        }
+	    } catch (IOException e) {
+	        System.out.println("Error loading file.");
+	    }
+	}
+
 	
 }
