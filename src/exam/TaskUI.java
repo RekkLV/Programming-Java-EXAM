@@ -1,66 +1,66 @@
 package exam;
 
-import javax.swing.JOptionPane;
-import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class TaskUI {
-	
+
     private TaskManager manager;
     private String currentFile = null;
-
+    private JFrame frame;
 
     public TaskUI(TaskManager manager) {
         this.manager = manager;
     }
-    private String buildMenuText() {
-        String fileInfo = (currentFile == null)
-                ? "Editing file: None\n\n"
-                : "Editing file: " + currentFile + "\n\n";
 
-        return fileInfo +
-        		"To-Do Manager\n"+
-               "1. Add Task\n" +
-               "2. List Tasks\n" +
-               "3. Edit Task\n" +
-               "4. Remove Task\n" +
-               "5. Mark Task as Completed\n" +
-               "6. Filter Tasks\n" +
-               "7. Save File\n" +
-               "8. Load/Create File\n" +
-               "9. Exit";
-    }
-    
     public void start() {
-    	chooseStartupFile();
-    	
-        while (true) {
-        	String choice = JOptionPane.showInputDialog(buildMenuText());
-
-            if (choice == null || choice.equals("9")) break;
-
-            switch (choice) {
-                case "1": addTask(); break;
-                case "2": listTasks(); break;
-                case "3": editTask(); break;
-                case "4": removeTask(); break;
-                case "5": markCompleted(); break;
-                case "6": filterTasks(); break;
-                case "7": saveTasks(); break;
-                case "8": loadTasks(); break;
-
-                default:
-                    JOptionPane.showMessageDialog(null, "Invalid option!");
-            } 
-        }autoSave();
+        chooseStartupFile();
+        SwingUtilities.invokeLater(this::createAndShowUI);
     }
+
+    private void createAndShowUI() {
+        frame = new JFrame("To-Do Manager");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(350, 450);
+        frame.setLocationRelativeTo(null);
+        
+        ImageIcon icon = new ImageIcon(getClass().getResource("/icon.png"));
+        frame.setIconImage(icon.getImage());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 1, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        panel.add(createButton("Add Task", e -> addTask()));
+        panel.add(createButton("List Tasks", e -> listTasks()));
+        panel.add(createButton("Edit Task", e -> editTask()));
+        panel.add(createButton("Remove Task", e -> removeTask()));
+        panel.add(createButton("Mark Task as Completed", e -> markCompleted()));
+        panel.add(createButton("Filter Tasks", e -> filterTasks()));
+        panel.add(createButton("Save File", e -> saveTasks()));
+        panel.add(createButton("Load/Create File", e -> loadTasks()));
+        panel.add(createButton("Exit", e -> exitApp()));
+
+        frame.add(panel);
+        updateFrameTitle();
+        frame.setVisible(true);
+    }
+
+    private JButton createButton(String text, java.awt.event.ActionListener action) {
+        JButton button = new JButton(text);
+        button.addActionListener(action);
+        return button;
+    }
+
 
     private Task chooseTaskByTitle(String message, ArrayList<Task> tasks) {
         if (tasks.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No tasks available!");
+            JOptionPane.showMessageDialog(frame, "No tasks available!");
             return null;
         }
 
@@ -70,7 +70,7 @@ public class TaskUI {
         }
 
         String selected = (String) JOptionPane.showInputDialog(
-                null,
+                frame,
                 message,
                 "Select Task",
                 JOptionPane.QUESTION_MESSAGE,
@@ -82,10 +82,9 @@ public class TaskUI {
         if (selected == null) return null;
 
         int selectedId = Integer.parseInt(selected.split(":")[0]);
-
         for (Task t : tasks) {
             if (t.getId() == selectedId) {
-                return t;
+            	return t;
             }
         }
         return null;
@@ -93,15 +92,15 @@ public class TaskUI {
 
 
     private void addTask() {
-        String title = JOptionPane.showInputDialog("Enter task title:");
+        String title = JOptionPane.showInputDialog(frame, "Enter task title:");
         if (title == null || title.isBlank()) {
-            JOptionPane.showMessageDialog(null, "Title cannot be empty!");
+            JOptionPane.showMessageDialog(frame, "Title cannot be empty!");
             return;
         }
 
         String[] priorities = {"LOW", "MEDIUM", "HIGH"};
         String priorityStr = (String) JOptionPane.showInputDialog(
-                null,
+                frame,
                 "Select priority:",
                 "Priority",
                 JOptionPane.QUESTION_MESSAGE,
@@ -111,9 +110,10 @@ public class TaskUI {
         );
 
         if (priorityStr == null) return;
-        
-        String deadlineInput = JOptionPane.showInputDialog("Enter deadline (yyyy-MM-dd HH:mm) or leave empty");
+
+        String deadlineInput = JOptionPane.showInputDialog(frame, "Enter deadline (yyyy-MM-dd HH:mm) or leave empty");
         LocalDateTime deadline = null;
+
         if (deadlineInput !=null && !deadlineInput.isBlank()) { 
         	try {
         		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -122,20 +122,19 @@ public class TaskUI {
         		JOptionPane.showMessageDialog(null, "Invalid date format!");
         		return;
         	}
+
         }
 
         manager.addTask(title, Priority.valueOf(priorityStr), deadline);
         autoSave();
-        JOptionPane.showMessageDialog(null, "Task added!");
-       
-        
+        JOptionPane.showMessageDialog(frame, "Task added!");
     }
 
     private void listTasks() {
         ArrayList<Task> tasks = manager.getAllTasks();
-
+        
         if (tasks.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No tasks available!");
+            JOptionPane.showMessageDialog(frame, "No tasks available!");
             return;
         }
 
@@ -144,21 +143,21 @@ public class TaskUI {
             sb.append(t).append("\n");
         }
 
-        JOptionPane.showMessageDialog(null, sb.toString());
+        JOptionPane.showMessageDialog(frame, sb.toString());
     }
 
     private void editTask() {
         Task task = chooseTaskByTitle("Select task to edit:", manager.getAllTasks());
         if (task == null) return;
 
-        String newTitle = JOptionPane.showInputDialog("New title:", task.getTitle());
+        String newTitle = JOptionPane.showInputDialog(frame,"New title:", task.getTitle());
         if (newTitle != null && !newTitle.isBlank()) {
             task.setTitle(newTitle);
         }
 
         String[] priorities = {"LOW", "MEDIUM", "HIGH"};
         String newPriority = (String) JOptionPane.showInputDialog(
-                null,
+                frame,
                 "Select new priority:",
                 "Priority",
                 JOptionPane.QUESTION_MESSAGE,
@@ -166,10 +165,11 @@ public class TaskUI {
                 priorities,
                 task.getPriority().name()
         );
+
         
         String currentDeadlineStr = (task.getDeadline() == null) ? "": task.getDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         
-        String newDeadlineInput = JOptionPane.showInputDialog("New deadline (yyyy-MM-dd HH:mm), leave empty to remove deadline: ", currentDeadlineStr);
+        String newDeadlineInput = JOptionPane.showInputDialog(frame,"New deadline (yyyy-MM-dd HH:mm), leave empty to remove deadline: ", currentDeadlineStr);
         
         if (newDeadlineInput !=null) {
         	if (newDeadlineInput.isBlank()) {
@@ -186,14 +186,12 @@ public class TaskUI {
         		}
         	}
         }
-
-
         if (newPriority != null) {
             task.setPriority(Priority.valueOf(newPriority));
-
         }
+        
         autoSave();
-        JOptionPane.showMessageDialog(null, "Task updated!");
+        JOptionPane.showMessageDialog(frame, "Task updated!");
     }
 
     private void removeTask() {
@@ -202,7 +200,7 @@ public class TaskUI {
 
         manager.removeTaskById(task.getId());
         autoSave();
-        JOptionPane.showMessageDialog(null, "Task removed!");
+        JOptionPane.showMessageDialog(frame, "Task removed!");
     }
 
     private void markCompleted() {
@@ -212,13 +210,13 @@ public class TaskUI {
 
         task.markCompleted();
         autoSave();
-        JOptionPane.showMessageDialog(null, "Task marked as completed!");
+        JOptionPane.showMessageDialog(frame, "Task marked as completed!");
     }
 
     private void filterTasks() {
         String[] options = {"ACTIVE", "COMPLETED"};
         String statusStr = (String) JOptionPane.showInputDialog(
-                null,
+                frame,
                 "Select status:",
                 "Filter Tasks",
                 JOptionPane.QUESTION_MESSAGE,
@@ -233,78 +231,76 @@ public class TaskUI {
         ArrayList<Task> filtered = manager.filterByStatus(status);
 
         if (filtered.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No " + status + " tasks found.");
+            JOptionPane.showMessageDialog(frame, "No " + status + " tasks found.");
             return;
         }
 
         StringBuilder sb = new StringBuilder(status + " Tasks:\n\n");
         for (Task t : filtered) {
-            sb.append(t).append("\n");
+        	sb.append(t).append("\n");
         }
-
-        JOptionPane.showMessageDialog(null, sb.toString());
+        JOptionPane.showMessageDialog(frame, sb.toString());
     }
-    private void saveTasks() {
-        String filename = JOptionPane.showInputDialog(
-                "Enter filename to save:",
-                currentFile == null ? "" : currentFile
-        );
 
+
+    private void saveTasks() {
+        String filename = JOptionPane.showInputDialog(frame,
+        		"Enter filename to save:",
+        		currentFile == null ? "" : currentFile
+        );
         if (filename == null || filename.isBlank()) return;
-        
+
         if (!filename.toLowerCase().endsWith(".txt")) {
-            filename += ".txt";
+        	filename += ".txt";
         }
         
         manager.saveToFile(filename);
-        currentFile = filename;   
+        currentFile = filename;
 
-        JOptionPane.showMessageDialog(null, "Tasks saved successfully!");
+        JOptionPane.showMessageDialog(frame, "Tasks saved successfully!");
+        
+        updateFrameTitle();
     }
-    
+
     private void loadTasks() {
-        String filename = JOptionPane.showInputDialog("Enter filename to load or create:");
+        String filename = JOptionPane.showInputDialog(frame, "Enter filename to load:");
         if (filename == null || filename.isBlank()) return;
 
-     
         if (!filename.toLowerCase().endsWith(".txt")) {
-            filename += ".txt";
+        	filename += ".txt";
         }
-
         File file = new File(filename);
+
         if (!file.exists()) {
             try {
                 file.createNewFile();
                 JOptionPane.showMessageDialog(null, "File did not exist, created new file: " + filename);
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(null, "Error creating new file: " + filename);
+                JOptionPane.showMessageDialog(frame, "Error creating new file: " + filename);
                 return;
             }
         }
-
         manager.loadFromFile(filename);
         currentFile = filename;
-
-        JOptionPane.showMessageDialog(null, "File loaded successfully!");
+        JOptionPane.showMessageDialog(frame, "File loaded successfully!");
+        
+        updateFrameTitle();
     }
-
 
     private void chooseStartupFile() {
         String filename = JOptionPane.showInputDialog(
-                "Enter file name to load or create:"
+        		"Enter file name to load or create:"
         );
-
+        
         if (filename == null || filename.isBlank()) {
-            JOptionPane.showMessageDialog(null, "No file selected. Application will exit.");
-            System.exit(0);
+        	JOptionPane.showMessageDialog(frame, "No file selected. Application will exit.");
+        	System.exit(0);
         }
-
-
         if (!filename.toLowerCase().endsWith(".txt")) {
-            filename += ".txt";
+        	filename += ".txt";
         }
-
         File file = new File(filename);
+
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -313,16 +309,31 @@ public class TaskUI {
                 JOptionPane.showMessageDialog(null, "Failed to create file.");
                 System.exit(0);
             }
+
         }
 
         manager.loadFromFile(filename);
         currentFile = filename;
+        
+
     }
 
     private void autoSave() {
         if (currentFile != null) {
-            manager.saveToFile(currentFile);
+        	manager.saveToFile(currentFile);
         }
-    }	
+    }
+    private void updateFrameTitle() {
+        if (frame != null) {
+            String fileText = (currentFile == null) ? "No file" : currentFile;
+            frame.setTitle("To-Do Manager - " + fileText);
+        }
+    }
 
+    
+    private void exitApp() {
+        autoSave();
+        frame.dispose();
+        System.exit(0);
+    }
 }
